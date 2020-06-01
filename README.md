@@ -4,8 +4,8 @@ mfpy
 *MoneyForward クラウド勤怠といい感じに通信していい感じに打刻するやつ*
 
  - Requests + bs4 でできてます
- - Seleniumなどブラウザで殴る系パッケージは使ってません
- - そのままCLIツールとして使えて便利
+ - Seleniumなどブラウザで殴る系パッケージは使ってないので軽量！
+ - そのままCLIツールとして使えて便利！
  - もちろん `import` してご自身の時間管理ツールと結合して使って頂けます
 
 
@@ -75,7 +75,7 @@ $ python -m mfpy -c {会社ID} -u {ユーザーID} -p {パスワード} finishbr
 
 ```
 $ python -m mfpy -c {会社ID} -u {ユーザーID} -p {パスワード} postentries \
-         -d 2020-06-02 \
+         -d 2020-04-28 \
          "10:00,11:00" "11:22,12:34"
 ```
 
@@ -104,5 +104,4 @@ with mfpy.client('company_id', 'user_id', 'password') as client:
     print(f'Starting job... ', end='')
     ok, status = client.start_job()
     print('OK!' if ok else f'Failed ({status})')
-    
 ```
