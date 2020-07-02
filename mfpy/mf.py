@@ -43,6 +43,15 @@ class _Ops(enum.Enum):
     start_break = 'start_break'
     end_break = 'end_break'
 
+    @classmethod
+    def to_human_readable(cls, op):
+        return {
+            cls.clock_in: 'start job',
+            cls.clock_out: 'finish job',
+            cls.start_break: 'start break',
+            cls.end_break: 'finish break',
+        }[op]
+
 
 class _Client:
     _sess: _MFSession
@@ -163,17 +172,11 @@ class _Client:
         if not mypage.ok:
             return False, mypage.status_code
 
-        mbs = bs(mypage.content.decode())
-        clock_in = mbs.find('input', attrs={'value': 'clock_in'}).parent
-        clock_out = mbs.find('input', attrs={'value': 'clock_out'}).parent
-        start_break = mbs.find('input', attrs={'value': 'start_break'}).parent
-        end_break = mbs.find('input', attrs={'value': 'end_break'}).parent
-        auths = {
-            _Ops.clock_in: clock_in.find('input', attrs={'name': 'authenticity_token'}).attrs['value'],
-            _Ops.clock_out: clock_out.find('input', attrs={'name': 'authenticity_token'}).attrs['value'],
-            _Ops.start_break: start_break.find('input', attrs={'name': 'authenticity_token'}).attrs['value'],
-            _Ops.end_break: end_break.find('input', attrs={'name': 'authenticity_token'}).attrs['value'],
-        }
+        form_input = bs(mypage.content.decode()).find('input', attrs={'value': op.value})
+        if form_input is None:
+            raise RuntimeError(f'"{_Ops.to_human_readable(op)}" is not available')
+
+        token = form_input.parent.find('input', attrs={'name': 'authenticity_token'}).attrs['value']
 
         # 2. POST time record
         web_time_recorder_url = path / 'my_page' / 'web_time_recorder'
@@ -182,7 +185,7 @@ class _Client:
         d = datetime.utcnow()
 
         form = {
-            'authenticity_token': auths[op],
+            'authenticity_token': token,
             'web_time_recorder_form[event]': op.value,
             'web_time_recorder_form[date]': f'{d.year}/{d.month}/{d.day}',
             'web_time_recorder_form[user_time]': d.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
