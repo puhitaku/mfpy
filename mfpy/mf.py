@@ -197,7 +197,7 @@ class _Client:
 
 
 def _establish(office_account_name, email, password) -> Tuple[Optional[_MFSession], int]:
-    employee_session_url = URL('https://attendance.moneyforward.com/employee_session')
+    employee_session_url = URL('https://attendance.moneyforward.com/email_employee_session')
     new_url = employee_session_url / 'new'
 
     # 1. Login
@@ -207,7 +207,7 @@ def _establish(office_account_name, email, password) -> Tuple[Optional[_MFSessio
 
     cookies = {'_session_id': new.cookies['_session_id']}
 
-    authenticity_token = bs(new.content.decode()).find('input', attrs={'name': 'authenticity_token'}).attrs['value']
+    authenticity_token = bs(new.content.decode()).find('meta', attrs={'name': 'csrf-token'}).attrs['content']
     form = {
         'authenticity_token': authenticity_token,
         'employee_session_form[office_account_name]': office_account_name,
